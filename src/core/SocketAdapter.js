@@ -29,6 +29,51 @@ function SocketAdapter(client) {
       client.emit(message.topic, message.msg);
     } else if (message.op === 'service_response') {
       client.emit(message.id, message);
+    } else if (message.op === 'fragment') {
+      handleFragment(message);
+    }
+  }
+
+  /**
+   * If a fragment of a message is received, store it in here until all the fragments
+   * are received. The fragments are stored in the following way:
+   *   
+   *   fragment_cache[message_id][fragment_num] = data
+   */
+  var fragment_cache = {};
+
+  function handleFragment(message) {
+    var id = message.id;
+    var data = message.data;
+    var num = message.num;
+    var total = message.total;
+
+    if (!fragment_cache[id]) {
+      fragment_cache[id] = [];
+    }
+
+    var cache = fragment_cache[id];
+    cache[num] = data;
+
+    // do we have all the fragments?
+    
+    var complete = true;
+    for (var i = 0; i < cache.length; i++) {
+      if (!cache[i]) {
+        complete = false;
+        break;
+      }
+    };
+
+    if (complete) {
+      var msg = '';
+      for (var i=0; i<cache.length; i++) {
+        msg += cache[i];
+      }
+      delete fragment_cache[id];
+      handleMessage(JSON.parse(msg));
+    } else {
+      // send a progress update
     }
   }
 

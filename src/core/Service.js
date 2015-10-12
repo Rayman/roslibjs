@@ -19,6 +19,9 @@ function Service(options) {
   this.ros = options.ros;
   this.name = options.name;
   this.serviceType = options.serviceType;
+
+  this.compression = options.compression || null;
+  this.fragment_size = options.fragment_size || null;
 }
 
 /**
@@ -51,6 +54,13 @@ Service.prototype.callService = function(request, callback, failedCallback) {
     service : this.name,
     args : request
   };
+  if (this.compression) {
+    call.compression = this.compression;
+  }
+  if (this.fragment_size) {
+    call.fragment_size = this.fragment_size;
+  }
+  
   this.ros.callOnConnection(call);
 };
 
