@@ -35,6 +35,7 @@ function Topic(options) {
   this.latch = options.latch || false;
   this.queue_size = options.queue_size || 100;
   this.queue_length = options.queue_length || 0;
+  this.fragment_size = options.fragment_size || null;
 
   // Check for valid compression types
   if (this.compression && this.compression !== 'png' &&
@@ -71,7 +72,8 @@ Topic.prototype.subscribe = function(callback) {
   if (this.subscribeId) { return; }
   this.ros.on(this.name, this._messageCallback);
   this.subscribeId = 'subscribe:' + this.name + ':' + (++this.ros.idCounter);
-  this.ros.callOnConnection({
+
+  var call = {
     op: 'subscribe',
     id: this.subscribeId,
     type: this.messageType,
@@ -79,7 +81,12 @@ Topic.prototype.subscribe = function(callback) {
     compression: this.compression,
     throttle_rate: this.throttle_rate,
     queue_length: this.queue_length
-  });
+  };
+  if (this.fragment_size) {
+    call.fragment_size = this.fragment_size;
+  }
+
+  this.ros.callOnConnection(call);
 };
 
 /**
