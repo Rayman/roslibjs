@@ -14,6 +14,11 @@ module.exports = function(grunt) {
       dist: {
         src: ['./src/RosLibBrowser.js'],
         dest: './build/roslib.js'
+      },
+      "options": {
+        "browserifyOptions": {
+          "debug": true,
+        }
       }
     },
     jshint: {
